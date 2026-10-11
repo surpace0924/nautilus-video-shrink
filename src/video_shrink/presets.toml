@@ -1,0 +1,23 @@
+# Default presets.
+# Override or add presets in ~/.config/nautilus-video-shrink/presets.toml
+# using the same format. A preset with the same key replaces the default.
+#
+#   label       : text shown in the Nautilus context menu
+#   size_mb     : target file size in MB (1 MB = 1,000,000 bytes)
+#   codec       : "h264" (MP4, H.264 + AAC) or "vp9" (WebM, VP9 + Opus)
+#   audio_kbps  : audio bitrate (optional, default 96)
+
+[github]
+label = "GitHub (10MB)"
+size_mb = 10
+codec = "h264"
+
+[discord]
+label = "Discord (10MB)"
+size_mb = 10
+codec = "h264"
+
+[discord-nitro-basic]
+label = "Discord Nitro Basic (50MB)"
+size_mb = 50
+codec = "h264"
