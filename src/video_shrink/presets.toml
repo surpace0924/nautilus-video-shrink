@@ -13,8 +13,8 @@ size_mb = 10
 codec = "h264"
 
 [discord]
-label = "Discord (10MB)"
-size_mb = 10
+label = "Discord (20MB)"
+size_mb = 20
 codec = "h264"
 
 [discord-nitro-basic]
