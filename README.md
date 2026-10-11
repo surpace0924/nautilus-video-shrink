@@ -2,6 +2,8 @@
 
 Right-click a video in Files (Nautilus) on Ubuntu, choose **Shrink Video** and a preset, and the video is re-encoded to fit within the preset's file size.
 
+https://github.com/user-attachments/assets/ca88b455-11a6-49d9-948c-7edc3be9bb0a
+
 - Presets for GitHub (10MB), Discord (20MB) and more
 - Two-pass ffmpeg encoding to hit the target size (automatically re-encodes if it overshoots)
 - Lowers the resolution automatically at low bitrates to keep the result watchable
