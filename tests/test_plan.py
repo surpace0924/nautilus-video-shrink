@@ -1,7 +1,7 @@
 import pytest
 
-from video_shrink.encoder import MediaInfo, ShrinkError, plan_encode
-from video_shrink.presets import load_presets
+from video_shrink.encoder import MediaInfo, ShrinkError, plan_encode, reserve_output_path
+from video_shrink.presets import PresetError, load_presets
 
 MB = 1_000_000
 
@@ -51,3 +51,37 @@ def test_user_preset_overrides_default(tmp_path):
     assert presets["discord"].size_mb == 500
     assert presets["webm"].codec == "vp9"
     assert "github" in presets
+
+
+@pytest.mark.parametrize("body", [
+    "size_mb = nan",
+    "size_mb = 0",
+    "size_mb = -5",
+    'size_mb = "10"',
+    "label = 'no size'",
+    "size_mb = 10\naudio_kbps = -1",
+    "size_mb = 10\naudio_kbps = 64.5",
+    'size_mb = 10\ncodec = "hevc"',
+])
+def test_invalid_user_preset_rejected(tmp_path, body):
+    user = tmp_path / "presets.toml"
+    user.write_text(f"[bad]\n{body}\n")
+    with pytest.raises(PresetError, match="'bad'"):
+        load_presets(user)
+
+
+def test_malformed_toml_rejected(tmp_path):
+    user = tmp_path / "presets.toml"
+    user.write_text("[bad\n")
+    with pytest.raises(PresetError):
+        load_presets(user)
+
+
+def test_reserve_output_path_never_reuses_a_name(tmp_path):
+    src = tmp_path / "clip.mov"
+    preset = load_presets()["github"]
+    first = reserve_output_path(src, preset)
+    second = reserve_output_path(src, preset)
+    assert first.name == "clip_github.mp4"
+    assert second.name == "clip_github-1.mp4"
+    assert first.exists() and second.exists()

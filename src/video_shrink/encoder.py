@@ -113,14 +113,18 @@ def plan_encode(info: MediaInfo, target_bytes: int, audio_kbps: int) -> EncodePl
     )
 
 
-def output_path(src: Path, preset: Preset) -> Path:
+def reserve_output_path(src: Path, preset: Preset) -> Path:
+    """Atomically create an empty, unused output file so concurrent runs never share one."""
     ext = CODEC_SETTINGS[preset.codec]["ext"]
     candidate = src.with_name(f"{src.stem}_{preset.key}.{ext}")
     n = 1
-    while candidate.exists():
-        candidate = src.with_name(f"{src.stem}_{preset.key}-{n}.{ext}")
-        n += 1
-    return candidate
+    while True:
+        try:
+            candidate.open("x").close()
+            return candidate
+        except FileExistsError:
+            candidate = src.with_name(f"{src.stem}_{preset.key}-{n}.{ext}")
+            n += 1
 
 
 def _scale_filter(short_side: int) -> list[str]:
@@ -182,7 +186,7 @@ def shrink(src: Path, preset: Preset, progress: ProgressCallback) -> Path | None
         return None
     info = probe(src)
     plan = plan_encode(info, preset.target_bytes, preset.audio_kbps)
-    dst = output_path(src, preset)
+    dst = reserve_output_path(src, preset)
     try:
         for attempt in range(MAX_RETRIES + 1):
             encode(src, dst, info, plan, preset.codec, progress)

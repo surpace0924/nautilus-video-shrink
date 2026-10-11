@@ -9,7 +9,7 @@ from pathlib import Path
 
 from . import __version__
 from .encoder import ShrinkError, shrink
-from .presets import load_presets
+from .presets import PresetError, load_presets
 
 
 class Cancelled(Exception):
@@ -69,7 +69,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="version", version=__version__)
     args = parser.parse_args(argv)
 
-    presets = load_presets()
+    try:
+        presets = load_presets()
+    except PresetError as e:
+        gui_error(str(e)) if args.gui else print(f"error: {e}", file=sys.stderr)
+        return 2
     if args.list_presets:
         for p in presets.values():
             print(f"{p.key}\t{p.size_mb:g}MB\t{p.codec}\t{p.label}")

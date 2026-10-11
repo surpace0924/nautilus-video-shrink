@@ -14,7 +14,7 @@ from gi.repository import GObject, Nautilus
 LIB_DIR = Path.home() / ".local/share/nautilus-video-shrink"
 sys.path.insert(0, str(LIB_DIR))
 
-from video_shrink.presets import load_presets  # noqa: E402
+from video_shrink.presets import PresetError, load_presets  # noqa: E402
 
 
 def _local_path(file_info):
@@ -34,7 +34,16 @@ class VideoShrinkMenuProvider(GObject.GObject, Nautilus.MenuProvider):
         submenu = Nautilus.Menu()
         top.set_submenu(submenu)
         # Reloaded on every popup so edits to presets.toml apply immediately.
-        for preset in load_presets().values():
+        try:
+            presets = load_presets()
+        except PresetError as e:
+            print(f"nautilus-video-shrink: {e}", file=sys.stderr)
+            item = Nautilus.MenuItem(name="VideoShrink::Error",
+                                     label="Invalid presets.toml (see video-shrink --list-presets)",
+                                     sensitive=False)
+            submenu.append_item(item)
+            return [top]
+        for preset in presets.values():
             item = Nautilus.MenuItem(name=f"VideoShrink::{preset.key}", label=preset.label)
             item.connect("activate", self._on_activate, preset.key, paths)
             submenu.append_item(item)
